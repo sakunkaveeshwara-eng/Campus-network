@@ -265,13 +265,7 @@ Rename the folders and files to match your repository.
 
 > If the network seems stuck after opening the file (for example a serial link that is up but passing no traffic), power-cycle the affected router.
 
----
 
-## Author
-
-**Your Name**
-Network Security Engineer (project)
-GitHub: [@your-username](https://github.com/your-username)
 
 ---
 
