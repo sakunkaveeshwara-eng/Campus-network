@@ -1,4 +1,6 @@
-#Secure Two-Campus Network (Cisco Packet Tracer)
+
+
+# Secure Two-Campus Network (Cisco Packet Tracer)
 
 A hierarchical, redundant and secured network design for a university with a **main campus (HQ)** and a **branch campus** about 100 miles apart. It was designed and implemented in Cisco Packet Tracer. The two campuses are linked through ISP routers and protected by Cisco ASA firewalls with a site-to-site IPsec VPN. All DHCP, DNS, web, email and FTP services run in a DMZ server farm at the main campus.
 
