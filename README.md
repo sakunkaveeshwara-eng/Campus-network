@@ -1,10 +1,8 @@
-
-
 # Secure Two-Campus Network (Cisco Packet Tracer)
 
-A hierarchical, redundant and secured network design for a university with a **main campus (HQ)** and a **branch campus** about 100 miles apart. It was designed and implemented in Cisco Packet Tracer. The two campuses are linked through ISP routers and protected by Cisco ASA firewalls with a site-to-site IPsec VPN. All DHCP, DNS, web, email and FTP services run in a DMZ server farm at the main campus.
+A hierarchical, redundant and secured network design for a university with a **main campus (HQ)** and a **branch campus** about 100 miles apart. It was designed and implemented in Cisco Packet Tracer. The two campuses are linked through ISP routers and protected by Cisco ASA firewalls. All DHCP, DNS, web, email and FTP services run in a DMZ server farm at the main campus.
 
-> **Status:** completed and tested (DHCP, CAPWAP/WLC, inter-VLAN routing, OSPF, HSRP, IPsec VPN).
+> **Status:** DHCP, CAPWAP/WLC, inter-VLAN routing, OSPF and HSRP are implemented and tested.
 
 ---
 
@@ -35,7 +33,6 @@ The university has four faculties on both campuses: **Health & Science, Business
 - Redundancy at every layer (dual core switches, HSRP, dual DHCP servers, EtherChannel)
 - Centralised services in a DMZ, reachable securely from the branch
 - Separate segments for LAN, WLAN, voice and management
-- A secure IPsec tunnel between the campuses
 
 ---
 
@@ -50,7 +47,7 @@ The university has four faculties on both campuses: **Health & Science, Business
                          /                 \
                   [ HQ-ISP ]            [ BRANCH-ISP ]
                       |                       |
-                  [ HQ-FWL ]  <== IPsec ==>  [ BRANCH-FWL ]
+                  [ HQ-FWL ]  <--- ISPs --->  [ BRANCH-FWL ]
                   /    |    \                  /        \
           [ DMZ ]  [HQ-MLSW1]=[HQ-MLSW2]   [B-MLSW1]=[B-MLSW2]
         DHCP-1/2,     |  (EtherChannel)        |  (EtherChannel)
@@ -69,16 +66,16 @@ The university has four faculties on both campuses: **Health & Science, Business
 | Design model | Hierarchical with redundancy |
 | Switching | Catalyst 3650 multilayer core, Catalyst 2960 access switches |
 | VLANs | 10 (Management), 20 (LAN), 50 (WLAN), 60 and 90 (branch LAN/WLAN), 199 (Blackhole) |
+| Trunking | 802.1Q trunks between access and core switches |
 | Link aggregation | LACP EtherChannel between the core switches |
 | Layer 2 protection | STP PortFast and BPDU Guard on access ports |
 | Inter-VLAN routing | On the multilayer core switches (SVIs) |
-| First-hop redundancy | HSRP between the core switches |
+| First-hop redundancy | HSRP between the core switches, with load balancing across VLANs |
 | Routing | OSPF process 15, area 0 (switches, firewalls, ISP routers) |
 | DHCP | Two DHCP servers in the DMZ, reached through `ip helper-address` relay |
-| Wireless | Cisco WLC with lightweight APs per department (CAPWAP) |
+| Wireless | Central WLC managing lightweight APs on both campuses (CAPWAP), with Employees, Corporate and Guest SSIDs |
 | Voice | IP phones in each department |
-| Security | Cisco ASA 5506-X firewalls with security zones, ACLs and NAT |
-| VPN | Site-to-site IPsec between HQ-FWL and BRANCH-FWL |
+| Security | Cisco ASA 5506-X firewalls with Inside, Outside and DMZ zones, ACLs, inspection policies (ICMP, DHCP, DNS, HTTP, SMTP, FTP, CAPWAP) and NAT (HQ only) |
 | Management | SSH-only VTY access restricted by a standard ACL to the Senior Network Security Engineer PC |
 | Basic hardening | Hostnames, console and enable passwords, password encryption, banners, `no ip domain-lookup` |
 
@@ -178,11 +175,7 @@ All routers, multilayer switches and firewalls run OSPF process 15 in area 0. Ea
 
 ### Firewall ACLs
 
-The OUTSIDE interfaces permit ICMP, DHCP (UDP 67/68), DNS, web, SMTP, FTP, CAPWAP (UDP 5246/5247, plus 12222/12223 for Cisco AP discovery), IKE (UDP 500) and ESP for the VPN. The ACL name is **case-sensitive**.
-
-### Site-to-site IPsec VPN
-
-IKEv1 with a pre-shared key and an ESP transform set between HQ-FWL (105.100.50.2) and BRANCH-FWL (205.200.100.2). The crypto ACLs are mirror images and cover the branch LAN/WLAN toward the DMZ and HQ WLAN.
+The OUTSIDE interfaces permit ICMP, DHCP (UDP 67/68), DNS, web, SMTP, FTP, CAPWAP (UDP 5246/5247, plus 12222/12223 for Cisco AP discovery). The ACL name is **case-sensitive**.
 
 ### SSH access
 
@@ -201,8 +194,6 @@ VTY lines accept SSH only, and a standard ACL permits only the Senior Network Se
 | DHCP relay | `show ip interface vlan <id>` | Core switches |
 | NAT policy | `show nat` | ASA |
 | ACL hits | `show access-list` | ASA |
-| IKE phase 1 | `show crypto isakmp sa` | ASA |
-| IPsec traffic | `show crypto ipsec sa` | ASA |
 | End-to-end | `ping 10.20.20.5` from a branch core switch | Branch |
 
 Use **Simulation mode** with a DHCP, UDP or ICMP filter to trace where a packet is dropped.
@@ -267,7 +258,4 @@ Rename the folders and files to match your repository.
 
 > If the network seems stuck after opening the file (for example a serial link that is up but passing no traffic), power-cycle the affected router.
 
-
-
 ---
-##
